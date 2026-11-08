@@ -113,7 +113,6 @@
         </div>
     </div>
 
-    <!-- MOBİL ÜST BAR VE MENÜ BUTONU -->
     <div class="md:hidden flex items-center justify-between bg-slate-950/90 border-b border-amber-500/20 p-4 sticky top-0 z-40 backdrop-blur-md">
         <h1 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500 tracking-wider heading-font">ADMIN</h1>
         <button onclick="toggleMobileMenu()" class="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-amber-400 font-bold text-sm shadow-md active:scale-95 transition-all">
@@ -121,7 +120,6 @@
         </button>
     </div>
 
-    <!-- MOBİL ARKA PLAN KARARTMASI -->
     <div id="menuOverlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
     <aside id="sidebarMenu" class="fixed md:static inset-y-0 left-0 w-72 glass-panel flex flex-col z-40 border-r border-amber-500/10 shadow-2xl transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0 h-full">
@@ -186,17 +184,6 @@
         </section>
 
         <section id="tab-spreadsheet" class="tab-content w-full">
-            
-            <div class="glass-panel p-5 mb-6 rounded-2xl border-2 border-emerald-500/50 bg-emerald-950/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg">
-                <div>
-                    <h3 class="text-lg font-black text-emerald-400 uppercase tracking-wider mb-1">🔄 GOOGLE E-TABLO İLE EŞİTLE</h3>
-                    <p class="text-xs text-slate-300">Google E-Tablonuzdaki (data sekmesi) güncel takımları ve puanları otomatik olarak slotlara dizerek çeker.</p>
-                </div>
-                <button onclick="fetchFromGoogleSheets()" class="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 font-black rounded-xl text-sm text-white shadow-lg transition-all shrink-0 active:scale-95">
-                    ⬇️ VERİLERİ ÇEK
-                </button>
-            </div>
-
             <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-2">
                 <div>
                     <h2 class="text-2xl font-black text-white heading-font tracking-wide">CANLI PUAN TABLOSU</h2>
@@ -253,7 +240,7 @@
                         <h3 class="text-sm font-black text-emerald-400 mb-1">Result Şablonu</h3>
                         <p class="text-[11px] text-slate-400 mb-4">Maç sonu sonuç tablosunu görsel olarak kaydet.</p>
                     </div>
-                    <button onclick="downloadImage('render-result', 'NVL_Result.png')" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all">📸 İndir</button>
+                    <button onclick="downloadImage('render-result', 'NVL_Result.png')" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-500 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all">📸 İndir</button>
                 </div>
                 
                 <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between border border-purple-500/20 hover:border-purple-500/40 transition-all">
@@ -290,7 +277,6 @@
             </div>
         </section>
 
-        <!-- ARKADA GÖRSEL ÜRETME ALANI (GİZLİ) -->
         <div id="render-container" style="position: fixed; left: -9999px; top: 0; pointer-events: none; opacity: 0;">
             <div id="render-livescore" style="width: 1920px; height: 1080px; box-sizing: border-box;"></div>
             <div id="render-result" style="width: 1920px; height: 1080px; box-sizing: border-box;"></div>
@@ -410,6 +396,8 @@
     <script>
         let currentUser = localStorage.getItem('pmgo_user');
         let socket;
+        let currentPrimaryColor = "#f59e0b";
+        let currentSecondaryColor = "#0ea5e9";
 
         if (!currentUser) {
             document.getElementById('loginModal').style.display = 'flex';
@@ -493,30 +481,14 @@
         }
 
         function applyThemeColors(primary, secondary) {
-            if(primary) document.documentElement.style.setProperty('--theme-primary', primary);
-            if(secondary) document.documentElement.style.setProperty('--theme-secondary', secondary);
+            if(primary) { currentPrimaryColor = primary; document.documentElement.style.setProperty('--theme-primary', primary); document.getElementById('themePrimaryInput').value = primary; }
+            if(secondary) { currentSecondaryColor = secondary; document.documentElement.style.setProperty('--theme-secondary', secondary); document.getElementById('themeSecondaryInput').value = secondary; }
         }
 
         const placementPoints = { 1: 10, 2: 6, 3: 5, 4: 4, 5: 3, 6: 2, 7: 1, 8: 1 };
         let currentTeams = [], matchScores = {}, mvpsData = [], rostersData = {}, logosData = {}, flagsData = {}, aliveStatus = {}, manualStatusData = {}, currentlySpectating = "";
         let activeSubMenu = {}; let tempTournamentLogo = ""; let tempDefaultLogo = ""; let tempDefaultFlag = "";
         let showAliveGlobal = true; let showManualStatusGlobal = true; let showMarqueeGlobal = true;
-
-        async function fetchFromGoogleSheets() {
-            try {
-                const res = await fetch('/api/fetch-sheets');
-                const data = await res.json();
-                if(data.success) {
-                    alert(`✅ E-Tablodan ${data.count} takımın puanları başarıyla çekildi!`);
-                    loadTableStructure();
-                    if(document.getElementById('tab-rosters').classList.contains('active')) loadRostersTab();
-                } else {
-                    alert("❌ Hata: " + data.message);
-                }
-            } catch(err) {
-                alert("Sunucuya bağlanılamadı!");
-            }
-        }
 
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -566,30 +538,33 @@
             if(autoCopy) navigator.clipboard.writeText(text).then(() => alert("Liste Kopyalandı!"));
         }
 
-        const TPL_STYLE = { bg: "radial-gradient(circle at 15% 50%, #1c1404 0%, #030712 60%), radial-gradient(circle at 85% 50%, #1c1404 0%, transparent 60%)", cardBg: "rgba(20, 24, 33, 0.85)", cardBorder: "1.5px solid rgba(245, 158, 11, 0.3)", textColor: "#ffffff", font: "'Rajdhani', sans-serif" };
-
         function generateLeaderboardImage(el, title) {
             let sorted = calculateLeaderboard(); let displayTeams = sorted.slice(0, 18);
             while(displayTeams.length < 18) displayTeams.push({ teamName: "", kills: "", score: "", wins: "", placeScore: "" });
             let leftCol = displayTeams.slice(0, 9); let rightCol = displayTeams.slice(9, 18);
             const gridLayout = "70px 1fr 80px 80px 80px 90px";
+            
+            const tplBg = `radial-gradient(circle at 15% 50%, ${currentPrimaryColor}15 0%, #030712 60%), radial-gradient(circle at 85% 50%, ${currentSecondaryColor}15 0%, transparent 60%)`;
+            const cardBg = "rgba(20, 24, 33, 0.85)";
+            const cardBorder = `1.5px solid ${currentPrimaryColor}50`;
+
             function makeRow(t, index) {
                 let r = index + 1, name = t.teamName || "";
                 let logoToUse = logosData[name] || tempDefaultLogo;
                 let logo = name && logoToUse ? `<img src="${logoToUse}" style="width:32px; height:32px; object-fit:contain; margin-right:12px; margin-top:25px;">` : `<div style="width:32px; height:32px; margin-right:12px;"></div>`;
-                let rowBg = name ? `background: ${TPL_STYLE.cardBg}; border: ${TPL_STYLE.cardBorder};` : `background: transparent; border: 1.5px solid transparent;`;
-                return `<div style="display: grid; grid-template-columns: ${gridLayout}; align-items: center; ${rowBg} border-radius: 10px; height: 54px; padding: 0 12px; font-size: 22px; font-weight: 800; color: ${TPL_STYLE.textColor}; box-sizing: border-box;">
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; margin-top: -20px; font-weight: 900; color: ${r===1?'#facc15':(r===2?'#cbd5e1':(r===3?'#b45309':'#fff'))};">${name?'#'+r:''}</div>
+                let rowBg = name ? `background: ${cardBg}; border: ${cardBorder};` : `background: transparent; border: 1.5px solid transparent;`;
+                return `<div style="display: grid; grid-template-columns: ${gridLayout}; align-items: center; ${rowBg} border-radius: 10px; height: 54px; padding: 0 12px; font-size: 22px; font-weight: 800; color: #ffffff; box-sizing: border-box;">
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; margin-top: -20px; font-weight: 900; color: ${r===1?currentPrimaryColor:(r===2?'#cbd5e1':(r===3?currentSecondaryColor:'#fff'))};">${name?'#'+r:''}</div>
                     <div style="display: flex; align-items: center; height: 100%; margin-top: -20px; padding-left: 8px; text-transform: uppercase; overflow: hidden;">${logo}<div style="display: flex; align-items: center; height: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1;">${name}</div></div>
                     <div style="display: flex; align-items: center; justify-content: center; height: 100%; margin-top: -20px; color: #a1a1aa;">${t.wins ?? (name?"0":"")}</div>
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; margin-top: -20px; color: #00e5ff;">${t.placeScore ?? (name?"0":"")}</div>
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; margin-top: -20px; color: ${currentSecondaryColor};">${t.placeScore ?? (name?"0":"")}</div>
                     <div style="display: flex; align-items: center; justify-content: center; height: 100%; margin-top: -20px; color: #f87171;">${t.kills ?? (name?"0":"")}</div>
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; margin-top: -20px; font-weight: 900; color: #f59e0b;">${t.score ?? (name?"0":"")}</div></div>`;
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; margin-top: -20px; font-weight: 900; color: ${currentPrimaryColor};">${t.score ?? (name?"0":"")}</div></div>`;
             }
             let header = `<div style="display: grid; grid-template-columns: ${gridLayout}; padding: 0 12px; margin-bottom: 12px; font-weight: 900; font-size: 16px; color: #94a3b8; letter-spacing: 2px;"><div style="text-align: center;">RANK</div><div style="padding-left: 8px;">TEAM NAME</div><div style="text-align: center;">WWCD</div><div style="text-align: center;">PLACE</div><div style="text-align: center;">KILLS</div><div style="text-align: center;">TOTAL</div></div>`;
-            el.innerHTML = `<div style="width: 1920px; height: 1080px; background: ${TPL_STYLE.bg}; background-color: #030712; padding: 50px 70px; font-family: ${TPL_STYLE.font}; display: flex; flex-direction: column; box-sizing: border-box;">
-                <div style="text-align: center; margin-bottom: 25px;"><div style="font-size: 55px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; color: white;"><span style="color: #f59e0b;">NVL ORGANIZATION</span> — ${title}</div></div>
-                <div style="flex-grow: 1; border: 2px solid rgba(245,158,11,0.4); border-radius: 16px; display: flex; background: rgba(8, 10, 15, 0.85); padding: 22px 35px; gap: 40px; box-sizing: border-box;">
+            el.innerHTML = `<div style="width: 1920px; height: 1080px; background: ${tplBg}; background-color: #030712; padding: 50px 70px; font-family: 'Rajdhani', sans-serif; display: flex; flex-direction: column; box-sizing: border-box;">
+                <div style="text-align: center; margin-bottom: 25px;"><div style="font-size: 55px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; color: white;"><span style="color: ${currentPrimaryColor};">NVL ORGANIZATION</span> — ${title}</div></div>
+                <div style="flex-grow: 1; border: 2px solid ${currentPrimaryColor}66; border-radius: 16px; display: flex; background: rgba(8, 10, 15, 0.85); padding: 22px 35px; gap: 40px; box-sizing: border-box;">
                     <div style="flex: 1; display: flex; flex-direction: column;">${header}<div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">${leftCol.map((t,i)=>makeRow(t,i)).join('')}</div></div>
                     <div style="flex: 1; display: flex; flex-direction: column;">${header}<div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">${rightCol.map((t,i)=>makeRow(t,i+9)).join('')}</div></div></div></div>`;
         }
@@ -597,31 +572,37 @@
         function generateSlotsImage(el) {
             let first18Teams = [...currentTeams.slice(0, 18)]; while(first18Teams.length < 18) first18Teams.push("-");
             let left = first18Teams.slice(0, 9); let right = first18Teams.slice(9, 18);
+            const tplBg = `radial-gradient(circle at 15% 50%, ${currentPrimaryColor}15 0%, #030712 60%), radial-gradient(circle at 85% 50%, ${currentSecondaryColor}15 0%, transparent 60%)`;
+            const cardBg = "rgba(20, 24, 33, 0.85)";
+            const cardBorder = `1.5px solid ${currentPrimaryColor}50`;
+
             function makeSlot(team, index, isRightCol) {
                 let slotNum = isRightCol ? (index + 12) : (index + 3); let empty = team === "-";
-                return `<div style="opacity: ${empty?0.3:1}; background: ${empty?'transparent':TPL_STYLE.cardBg}; border: ${empty?'1.5px solid transparent':TPL_STYLE.cardBorder}; border-radius: 12px; height: 55px; display:flex; align-items:center; padding: 0 20px; box-sizing: border-box;">
-                    <span style="color: #f59e0b; font-size: 24px; font-weight: 900; min-width: 50px; text-align: center; display: flex; align-items: center; justify-content: center; height: 35px; margin-top: -30px; background: transparent;">#${slotNum}</span>
+                return `<div style="opacity: ${empty?0.3:1}; background: ${empty?'transparent':cardBg}; border: ${empty?'1.5px solid transparent':cardBorder}; border-radius: 12px; height: 55px; display:flex; align-items:center; padding: 0 20px; box-sizing: border-box;">
+                    <span style="color: ${currentPrimaryColor}; font-size: 24px; font-weight: 900; min-width: 50px; text-align: center; display: flex; align-items: center; justify-content: center; height: 35px; margin-top: -30px; background: transparent;">#${slotNum}</span>
                     <span style="margin-left:20px; font-size: 26px; font-weight:800; text-transform:uppercase; color:white; display:flex; align-items:center; height: 100%; margin-top: -15px; line-height:1;">${team}</span></div>`;
             }
-            el.innerHTML = `<div style="width: 1920px; height: 1080px; background: ${TPL_STYLE.bg}; background-color: #030712; padding: 50px 70px; font-family: ${TPL_STYLE.font}; display: flex; flex-direction: column; box-sizing: border-box;">
-                <div style="text-align: center; margin-bottom: 25px;"><div style="font-size: 50px; font-weight: 900; text-transform: uppercase; color: white;"><span style="color: #f59e0b;">NVL ORGANIZATION</span> — TOURNAMENT SLOTS (SLOT 3 - 20)</div></div>
-                <div style="flex-grow: 1; border: 2px solid rgba(245,158,11,0.4); border-radius: 16px; display: flex; background: rgba(8, 10, 15, 0.85); padding: 25px 40px; gap: 50px; box-sizing: border-box;">
+            el.innerHTML = `<div style="width: 1920px; height: 1080px; background: ${tplBg}; background-color: #030712; padding: 50px 70px; font-family: 'Rajdhani', sans-serif; display: flex; flex-direction: column; box-sizing: border-box;">
+                <div style="text-align: center; margin-bottom: 25px;"><div style="font-size: 50px; font-weight: 900; text-transform: uppercase; color: white;"><span style="color: ${currentPrimaryColor};">NVL ORGANIZATION</span> — TOURNAMENT SLOTS (SLOT 3 - 20)</div></div>
+                <div style="flex-grow: 1; border: 2px solid ${currentPrimaryColor}66; border-radius: 16px; display: flex; background: rgba(8, 10, 15, 0.85); padding: 25px 40px; gap: 50px; box-sizing: border-box;">
                     <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">${left.map((t,i)=>makeSlot(t,i,false)).join('')}</div>
                     <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">${right.map((t,i)=>makeSlot(t,i,true)).join('')}</div></div></div>`;
         }
 
         function generateMVPImage(el) {
             let cards = "";
+            const tplBg = `radial-gradient(circle at 15% 50%, ${currentPrimaryColor}15 0%, #030712 60%), radial-gradient(circle at 85% 50%, ${currentSecondaryColor}15 0%, transparent 60%)`;
+            const cardBg = "rgba(20, 24, 33, 0.85)";
+
             for(let i=0; i<3; i++) {
                 let m = mvpsData[i] || {name: "TBD", team: "TBD"}; 
-                let col = "#facc15";
-                cards += `<div style="flex:1; background: ${TPL_STYLE.cardBg}; border: 3px solid ${col}; border-radius: 24px; padding: 60px 30px; text-align: center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                    <div style="color: #f59e0b; font-size: 24px; font-weight: 900; margin-bottom: 15px; letter-spacing: 2px; text-transform: uppercase;">MATCH MVP</div>
+                cards += `<div style="flex:1; background: ${cardBg}; border: 3px solid ${currentPrimaryColor}; border-radius: 24px; padding: 60px 30px; text-align: center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                    <div style="color: ${currentPrimaryColor}; font-size: 24px; font-weight: 900; margin-bottom: 15px; letter-spacing: 2px; text-transform: uppercase;">MATCH MVP</div>
                     <h3 style="color: #fff; font-size: 55px; margin: 0 0 15px 0; font-weight:900; text-transform:uppercase;">${m.name}</h3>
                     <h4 style="color: #9ca3af; font-size: 32px; margin: 0; font-weight:800; text-transform:uppercase;">${m.team}</h4></div>`;
             }
-            el.innerHTML = `<div style="width: 1920px; height: 1080px; background: ${TPL_STYLE.bg}; background-color: #030712; padding: 70px; font-family: ${TPL_STYLE.font}; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;">
-                <h1 style="text-align:center; font-size: 70px; color: #f59e0b; margin: 0 0 50px 0; font-weight:900;">MATCH MVP PLAYERS</h1>
+            el.innerHTML = `<div style="width: 1920px; height: 1080px; background: ${tplBg}; background-color: #030712; padding: 70px; font-family: 'Rajdhani', sans-serif; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;">
+                <h1 style="text-align:center; font-size: 70px; color: ${currentPrimaryColor}; margin: 0 0 50px 0; font-weight:900;">MATCH MVP PLAYERS</h1>
                 <div style="display: flex; justify-content: space-between; gap: 40px;">${cards}</div></div>`;
         }
 
@@ -954,16 +935,12 @@
             if (data.settings.showSpectateLogo !== undefined) document.getElementById('showSpectateLogoSelect').value = data.settings.showSpectateLogo.toString();
             
             if (data.settings.themePrimary) {
-                document.getElementById('themePrimaryInput').value = data.settings.themePrimary;
                 applyThemeColors(data.settings.themePrimary, data.settings.themeSecondary);
-            }
-            if (data.settings.themeSecondary) {
-                document.getElementById('themeSecondaryInput').value = data.settings.themeSecondary;
             }
 
             if (data.tournamentLogo) { tempTournamentLogo = data.tournamentLogo; document.getElementById('tournamentLogoPreview').innerHTML = `<img src="${data.tournamentLogo}" class="w-full h-full object-contain">`; }
             if (data.defaultLogo) { tempDefaultLogo = data.defaultLogo; document.getElementById('defaultLogoPreview').innerHTML = `<img src="${tempDefaultLogo}" class="w-full h-full object-contain">`; }
-            if (data.defaultFlag) { tempDefaultFlag = data.defaultFlag; document.getElementById('defaultFlagPreview').innerHTML = `<img src="${data.defaultFlag}" class="w-full h-full object-contain">`; }
+            if (data.defaultFlag) { tempDefaultFlag = data.defaultFlag; document.getElementById('defaultFlagPreview').innerHTML = `<img src="${tempDefaultFlag}" class="w-full h-full object-contain">`; }
             
             let current = data.settings.currentMatch || "MATCH 1 / ERANGEL"; let parts = current.split('/');
             if(parts.length >= 2) { document.getElementById('matchNumSelect').value = parts[0].trim(); document.getElementById('mapNameSelect').value = parts[1].trim(); }
