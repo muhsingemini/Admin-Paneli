@@ -527,7 +527,6 @@
             if(tabId === 'tab-downloads') loadDownloadCenter();
             if(tabId === 'tab-settings') loadSettingsData();
 
-            // Mobilde sekme tıklandığında menüyü otomatik kapat
             if (window.innerWidth < 768) {
                 toggleMobileMenu();
             }
@@ -963,7 +962,7 @@
             }
 
             if (data.tournamentLogo) { tempTournamentLogo = data.tournamentLogo; document.getElementById('tournamentLogoPreview').innerHTML = `<img src="${data.tournamentLogo}" class="w-full h-full object-contain">`; }
-            if (data.defaultLogo) { tempDefaultLogo = data.defaultLogo; document.getElementById('defaultLogoPreview').innerHTML = `<img src="${data.defaultLogo}" class="w-full h-full object-contain">`; }
+            if (data.defaultLogo) { tempDefaultLogo = data.defaultLogo; document.getElementById('defaultLogoPreview').innerHTML = `<img src="${tempDefaultLogo}" class="w-full h-full object-contain">`; }
             if (data.defaultFlag) { tempDefaultFlag = data.defaultFlag; document.getElementById('defaultFlagPreview').innerHTML = `<img src="${data.defaultFlag}" class="w-full h-full object-contain">`; }
             
             let current = data.settings.currentMatch || "MATCH 1 / ERANGEL"; let parts = current.split('/');
@@ -981,7 +980,7 @@
             
             applyThemeColors(primaryColor, secondaryColor);
 
-            if (tempTournamentLogo) await fetch('/api/tournament-logo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tournamentLogo: tempTournamentLogo })</i> });
+            if (tempTournamentLogo) await fetch('/api/tournament-logo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tournamentLogo: tempTournamentLogo }) });
             await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tournamentName: document.getElementById('tournamentNameInput').value, currentMatch: combinedMatch, showAlive: showAliveVal, showManualStatus: showManualStatusVal, showMarquee: showMarqueeVal, showSpectateLogo: showSpectateLogoVal, themePrimary: primaryColor, themeSecondary: secondaryColor }) });
 
             showAliveGlobal = showAliveVal; showManualStatusGlobal = showManualStatusVal; loadTableStructure();
