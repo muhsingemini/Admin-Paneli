@@ -113,6 +113,7 @@
         </div>
     </div>
 
+    <!-- MOBİL ÜST BAR VE MENÜ BUTONU -->
     <div class="md:hidden flex items-center justify-between bg-slate-950/90 border-b border-amber-500/20 p-4 sticky top-0 z-40 backdrop-blur-md">
         <h1 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500 tracking-wider heading-font">ADMIN</h1>
         <button onclick="toggleMobileMenu()" class="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-amber-400 font-bold text-sm shadow-md active:scale-95 transition-all">
@@ -120,6 +121,7 @@
         </button>
     </div>
 
+    <!-- MOBİL ARKA PLAN KARARTMASI -->
     <div id="menuOverlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
     <aside id="sidebarMenu" class="fixed md:static inset-y-0 left-0 w-72 glass-panel flex flex-col z-40 border-r border-amber-500/10 shadow-2xl transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0 h-full">
@@ -277,6 +279,7 @@
             </div>
         </section>
 
+        <!-- ARKADA GÖRSEL ÜRETME ALANI (GİZLİ) -->
         <div id="render-container" style="position: fixed; left: -9999px; top: 0; pointer-events: none; opacity: 0;">
             <div id="render-livescore" style="width: 1920px; height: 1080px; box-sizing: border-box;"></div>
             <div id="render-result" style="width: 1920px; height: 1080px; box-sizing: border-box;"></div>
@@ -606,13 +609,32 @@
                 <div style="display: flex; justify-content: space-between; gap: 40px;">${cards}</div></div>`;
         }
 
-        function downloadImage(elementId, filename) {
-            calculateLeaderboard(); const element = document.getElementById(elementId);
+        async function downloadImage(elementId, filename) {
+            calculateLeaderboard(); 
+            const element = document.getElementById(elementId);
+            
             if (elementId === 'render-livescore') generateLeaderboardImage(element, "LIVESCORE");
             if (elementId === 'render-result') generateLeaderboardImage(element, "MATCH RESULTS");
             if (elementId === 'render-slots') generateSlotsImage(element);
             if (elementId === 'render-mvp') generateMVPImage(element);
-            setTimeout(() => { html2canvas(element, { backgroundColor: '#030712', scale: 2, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL('image/png', 1.0); link.click(); }); }, 400);
+
+            setTimeout(() => { 
+                html2canvas(element, { backgroundColor: '#030712', scale: 2, useCORS: true }).then(canvas => { 
+                    const dataUrl = canvas.toDataURL('image/png', 1.0);
+                    
+                    const link = document.createElement('a'); 
+                    link.href = dataUrl;
+                    link.download = filename;
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    alert("Görsel başarıyla oluşturuldu! Tarayıcınızın veya telefonunuzun 'İndirilenler' (Downloads) klasörünü kontrol edebilirsiniz.");
+                }).catch(err => {
+                    alert("Görsel oluşturulurken bir hata oluştu!");
+                }); 
+            }, 400);
         }
 
         async function saveMVPs() {
@@ -939,8 +961,8 @@
             }
 
             if (data.tournamentLogo) { tempTournamentLogo = data.tournamentLogo; document.getElementById('tournamentLogoPreview').innerHTML = `<img src="${data.tournamentLogo}" class="w-full h-full object-contain">`; }
-            if (data.defaultLogo) { tempDefaultLogo = data.defaultLogo; document.getElementById('defaultLogoPreview').innerHTML = `<img src="${tempDefaultLogo}" class="w-full h-full object-contain">`; }
-            if (data.defaultFlag) { tempDefaultFlag = data.defaultFlag; document.getElementById('defaultFlagPreview').innerHTML = `<img src="${tempDefaultFlag}" class="w-full h-full object-contain">`; }
+            if (data.defaultLogo) { tempDefaultLogo = data.defaultLogo; document.getElementById('defaultLogoPreview').innerHTML = `<img src="${data.defaultLogo}" class="w-full h-full object-contain">`; }
+            if (data.defaultFlag) { tempDefaultFlag = data.defaultFlag; document.getElementById('defaultFlagPreview').innerHTML = `<img src="${data.defaultFlag}" class="w-full h-full object-contain">`; }
             
             let current = data.settings.currentMatch || "MATCH 1 / ERANGEL"; let parts = current.split('/');
             if(parts.length >= 2) { document.getElementById('matchNumSelect').value = parts[0].trim(); document.getElementById('mapNameSelect').value = parts[1].trim(); }
