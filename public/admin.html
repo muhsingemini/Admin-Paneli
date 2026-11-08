@@ -625,12 +625,13 @@
                     const link = document.createElement('a'); 
                     link.href = dataUrl;
                     link.download = filename;
+                    link.setAttribute('type', 'image/png');
                     
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     
-                    alert("Görsel başarıyla oluşturuldu! Tarayıcınızın veya telefonunuzun 'İndirilenler' (Downloads) klasörünü kontrol edebilirsiniz.");
+                    alert("Görsel indirildi! Telefonunuzun 'Dosyalarım' veya 'İndirilenler' (Downloads) klasörünü kontrol edebilirsiniz.");
                 }).catch(err => {
                     alert("Görsel oluşturulurken bir hata oluştu!");
                 }); 
