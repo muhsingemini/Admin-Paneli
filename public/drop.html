@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVL Drop Overlay</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00e5ff;
+            --neon-gold: #f59e0b;
+        }
+
+        body { 
+            margin: 0; padding: 0; overflow: hidden; 
+            font-family: 'Rajdhani', sans-serif; 
+            width: 1920px; height: 1080px;
+            background: transparent;
+            display: flex; flex-direction: column;
+            box-sizing: border-box; padding: 40px 60px;
+        }
+
+        /* ÜST BAŞLIK */
+        .header {
+            text-align: center; margin-bottom: 20px;
+            animation: fadeInDown 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .title {
+            font-size: 45px; font-weight: 900; text-transform: uppercase; 
+            letter-spacing: 4px; color: white; margin: 0; line-height: 1;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.9);
+        }
+        .title .brand { color: var(--neon-gold); text-shadow: 0 0 20px rgba(245, 158, 11, 0.6); }
+
+        /* ANA YERLEŞİM: SOL 10 - ORTA BOŞ/UÇAK ALANI - SAĞ 10 */
+        .drop-layout {
+            display: flex; flex-direction: row; justify-content: space-between; align-items: stretch;
+            flex-grow: 1; gap: 40px;
+        }
+
+        .side-col {
+            display: flex; flex-direction: column; justify-content: space-between;
+            width: 180px;
+        }
+
+        /* LOGO KUTULARI */
+        .drop-logo-box {
+            position: relative; width: 100%; height: 78px;
+            background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 229, 255, 0.35); border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.08), 0 5px 15px rgba(0,0,0,0.8);
+            padding-top: 4px; box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .drop-logo-box::before {
+            content: ''; position: absolute; top: -2px; left: -2px; width: 12px; height: 12px;
+            border-top: 3px solid var(--neon-cyan); border-left: 3px solid var(--neon-cyan); border-radius: 12px 0 0 0;
+        }
+        .drop-logo-box::after {
+            content: ''; position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px;
+            border-bottom: 3px solid var(--neon-cyan); border-right: 3px solid var(--neon-cyan); border-radius: 0 0 12px 0;
+        }
+
+        .drop-logo-box img {
+            max-width: 85%; height: 38px; object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.5));
+            margin-bottom: 2px;
+        }
+
+        .drop-team-name {
+            font-size: 12px; font-weight: 800; color: #fff;
+            text-transform: uppercase; white-space: nowrap; 
+            overflow: hidden; text-overflow: ellipsis; max-width: 90%;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9); letter-spacing: 0.5px;
+        }
+
+        .drop-rank {
+            position: absolute; top: -10px; left: -8px;
+            background: var(--neon-gold); color: #000;
+            font-weight: 900; font-size: 12px; padding: 1px 8px;
+            border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            letter-spacing: 1px; z-index: 10;
+        }
+
+        /* ORTA ALAN: TAMAMEN BOŞ (Uçaktan inen oyuncu/oyun ekranı arka planda görünmesi için) */
+        .center-stage {
+            flex-grow: 1;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInDown {
+            0% { opacity: 0; transform: translateY(-40px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="title"><span class="brand">NVL ORGANIZATION</span> — BATTLEGROUND DROP</h1>
+    </div>
+
+    <div class="drop-layout">
+        <!-- SOL KANAT (İLK 10 TAKIM: 1 - 10) -->
+        <div class="side-col" id="drop-left"></div>
+
+        <!-- ORTA ALAN (SADECE OYUN EKRANI / UÇAK) -->
+        <div class="center-stage"></div>
+
+        <!-- SAĞ KANAT (İLK 10 TAKIM: 11 - 20 VEYA SIRADAKİLER) -->
+        <div class="side-col" id="drop-right"></div>
+    </div>
+
+    <script>
+        const socket = window.io();
+
+        let globalLeaderboard = [];
+        let globalLogos = {};
+        let globalDefaultLogo = "";
+
+        function renderDropScreen() {
+            const leftContainer = document.getElementById('drop-left');
+            const rightContainer = document.getElementById('drop-right');
+            
+            leftContainer.innerHTML = '';
+            rightContainer.innerHTML = '';
+
+            let sorted = [...globalLeaderboard];
+            if (sorted.length === 0) {
+                // Eğer henüz puan girilmediyse genel takımları sırayla al
+            }
+
+            let leftTeams = sorted.slice(0, 10);
+            let rightTeams = sorted.slice(10, 20);
+
+            // Sol taraf 10 kutuya tamamla
+            while(leftTeams.length < 10) {
+                leftTeams.push({ teamName: "" });
+            }
+            // Sağ taraf 10 kutuya tamamla
+            while(rightTeams.length < 10) {
+                rightTeams.push({ teamName: "" });
+            }
+
+            // 1. SOL KANAT (1-10)
+            leftTeams.forEach((t, i) => {
+                let rankNum = i + 1;
+                let name = t.teamName || "";
+                let logoSrc = globalLogos[name] || globalDefaultLogo;
+                
+                let content = (name && logoSrc) 
+                    ? `<img src="${logoSrc}">` 
+                    : `<div style="height:38px; display:flex; align-items:center; justify-content:center; color:#555; font-weight:bold; font-size:11px;">LOGO</div>`;
+
+                if(name) {
+                    leftContainer.innerHTML += `
+                    <div class="drop-logo-box">
+                        <div class="drop-rank">#${rankNum}</div>
+                        ${content}
+                        <div class="drop-team-name">${name}</div>
+                    </div>`;
+                } else {
+                    leftContainer.innerHTML += `<div style="height: 78px;"></div>`; 
+                }
+            });
+
+            // 2. SAĞ KANAT (11-20)
+            rightTeams.forEach((t, i) => {
+                let rankNum = i + 11;
+                let name = t.teamName || "";
+                let logoSrc = globalLogos[name] || globalDefaultLogo;
+                
+                let content = (name && logoSrc) 
+                    ? `<img src="${logoSrc}">` 
+                    : `<div style="height:38px; display:flex; align-items:center; justify-content:center; color:#555; font-weight:bold; font-size:11px;">LOGO</div>`;
+
+                if(name) {
+                    rightContainer.innerHTML += `
+                    <div class="drop-logo-box">
+                        <div class="drop-rank">#${rankNum}</div>
+                        ${content}
+                        <div class="drop-team-name">${name}</div>
+                    </div>`;
+                } else {
+                    rightContainer.innerHTML += `<div style="height: 78px;"></div>`;
+                }
+            });
+        }
+
+        socket.on('liveUpdate', (data) => {
+            if (data.leaderboard) globalLeaderboard = data.leaderboard;
+            if (data.logos) globalLogos = data.logos;
+            if (data.globalLogos) globalLogos = { ...globalLogos, ...data.globalLogos };
+            if (data.defaultLogo !== undefined) globalDefaultLogo = data.defaultLogo;
+            renderDropScreen();
+        });
+
+        fetch('/api/data').then(res => res.json()).then(data => {
+            if (data.leaderboard) globalLeaderboard = data.leaderboard;
+            if (data.logos) globalLogos = data.logos;
+            if (data.globalLogos) globalLogos = { ...globalLogos, ...data.globalLogos };
+            if (data.defaultLogo) globalDefaultLogo = data.defaultLogo;
+            renderDropScreen();
+        });
+    </script>
+</body>
+</html>
