@@ -622,16 +622,25 @@
                 html2canvas(element, { backgroundColor: '#030712', scale: 2, useCORS: true }).then(canvas => { 
                     const dataUrl = canvas.toDataURL('image/png', 1.0);
                     
-                    const link = document.createElement('a'); 
-                    link.href = dataUrl;
-                    link.download = filename;
-                    link.setAttribute('type', 'image/png');
-                    
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    alert("Görsel indirildi! Telefonunuzun 'Dosyalarım' veya 'İndirilenler' (Downloads) klasörünü kontrol edebilirsiniz.");
+                    const win = window.open();
+                    if (win) {
+                        win.document.write(`
+                            <html>
+                            <head><title>${filename}</title></head>
+                            <body style="background:#020617; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; color:#fff; font-family:sans-serif; text-align:center; padding:20px;">
+                                <p style="margin-bottom:15px; font-size:18px; font-weight:bold; color:#f59e0b;">👉 Görsele parmağınızla basılı tutun ve "Resmi İndir" / "Resmi Kaydet" seçeneğine tıklayın.</p>
+                                <img src="${dataUrl}" style="max-width:100%; height:auto; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.8);" />
+                            </body>
+                            </html>
+                        `);
+                    } else {
+                        const link = document.createElement('a'); 
+                        link.href = dataUrl;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
                 }).catch(err => {
                     alert("Görsel oluşturulurken bir hata oluştu!");
                 }); 
@@ -962,8 +971,8 @@
             }
 
             if (data.tournamentLogo) { tempTournamentLogo = data.tournamentLogo; document.getElementById('tournamentLogoPreview').innerHTML = `<img src="${data.tournamentLogo}" class="w-full h-full object-contain">`; }
-            if (data.defaultLogo) { tempDefaultLogo = data.defaultLogo; document.getElementById('defaultLogoPreview').innerHTML = `<img src="${data.defaultLogo}" class="w-full h-full object-contain">`; }
-            if (data.defaultFlag) { tempDefaultFlag = data.defaultFlag; document.getElementById('defaultFlagPreview').innerHTML = `<img src="${data.defaultFlag}" class="w-full h-full object-contain">`; }
+            if (data.defaultLogo) { tempDefaultLogo = data.defaultLogo; document.getElementById('defaultLogoPreview').innerHTML = `<img src="${tempDefaultLogo}" class="w-full h-full object-contain">`; }
+            if (data.defaultFlag) { tempDefaultFlag = data.defaultFlag; document.getElementById('defaultFlagPreview').innerHTML = `<img src="${tempDefaultFlag}" class="w-full h-full object-contain">`; }
             
             let current = data.settings.currentMatch || "MATCH 1 / ERANGEL"; let parts = current.split('/');
             if(parts.length >= 2) { document.getElementById('matchNumSelect').value = parts[0].trim(); document.getElementById('mapNameSelect').value = parts[1].trim(); }
