@@ -233,7 +233,7 @@
                         <h3 class="text-sm font-black text-amber-400 mb-1">LiveScore Şablonu</h3>
                         <p class="text-[11px] text-slate-400 mb-4">Canlı sıralama tablosunu görsel olarak kaydet.</p>
                     </div>
-                    <button onclick="downloadImage('render-livescore', 'NVL_Livescore.png')" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-amber-500/20 transition-all">📸 İndir</button>
+                    <button onclick="downloadImage('render-livescore', 'NVL_Livescore.png')" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-amber-500/20 transition-all">📸 Görüntüle & SS Al</button>
                 </div>
                 
                 <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between border border-emerald-500/20 hover:border-emerald-500/40 transition-all">
@@ -242,7 +242,7 @@
                         <h3 class="text-sm font-black text-emerald-400 mb-1">Result Şablonu</h3>
                         <p class="text-[11px] text-slate-400 mb-4">Maç sonu sonuç tablosunu görsel olarak kaydet.</p>
                     </div>
-                    <button onclick="downloadImage('render-result', 'NVL_Result.png')" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-500 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all">📸 İndir</button>
+                    <button onclick="downloadImage('render-result', 'NVL_Result.png')" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-500 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all">📸 Görüntüle & SS Al</button>
                 </div>
                 
                 <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between border border-purple-500/20 hover:border-purple-500/40 transition-all">
@@ -251,7 +251,7 @@
                         <h3 class="text-sm font-black text-purple-400 mb-1">Slot Tablosu</h3>
                         <p class="text-[11px] text-slate-400 mb-4">Slot 3-20 arası takımların yerleşim şablonu.</p>
                     </div>
-                    <button onclick="downloadImage('render-slots', 'NVL_Slot_Table.png')" class="w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-black rounded-xl text-xs shadow-lg shadow-purple-500/20 transition-all">📸 İndir</button>
+                    <button onclick="downloadImage('render-slots', 'NVL_Slot_Table.png')" class="w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-black rounded-xl text-xs shadow-lg shadow-purple-500/20 transition-all">📸 Görüntüle & SS Al</button>
                 </div>
                 
                 <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between border border-cyan-500/20 hover:border-cyan-500/40 transition-all">
@@ -260,7 +260,7 @@
                         <h3 class="text-sm font-black text-cyan-400 mb-1">MVP Kartı</h3>
                         <p class="text-[11px] text-slate-400 mb-4">En değerli oyuncu performans kartı.</p>
                     </div>
-                    <button onclick="downloadImage('render-mvp', 'NVL_MVP.png')" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-cyan-500/20 transition-all">📸 İndir</button>
+                    <button onclick="downloadImage('render-mvp', 'NVL_MVP.png')" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black rounded-xl text-xs shadow-lg shadow-cyan-500/20 transition-all">📸 Görüntüle & SS Al</button>
                 </div>
             </div>
 
@@ -626,10 +626,16 @@
                     if (win) {
                         win.document.write(`
                             <html>
-                            <head><title>${filename}</title></head>
-                            <body style="background:#020617; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; color:#fff; font-family:sans-serif; text-align:center; padding:20px;">
-                                <p style="margin-bottom:15px; font-size:18px; font-weight:bold; color:#f59e0b;">👉 Görsele parmağınızla basılı tutun ve "Resmi İndir" / "Resmi Kaydet" seçeneğine tıklayın.</p>
-                                <img src="${dataUrl}" style="max-width:100%; height:auto; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.8);" />
+                            <head>
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>${filename}</title>
+                            </head>
+                            <body style="background:#020617; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; min-height:100vh; color:#fff; font-family:sans-serif; padding:20px; box-sizing:border-box;">
+                                <div style="position:sticky; top:10px; z-index:100; margin-bottom:15px; width:100%; display:flex; justify-content:center;">
+                                    <button onclick="window.close()" style="background:#ef4444; color:#fff; border:none; padding:12px 24px; font-size:16px; font-weight:bold; border-radius:12px; box-shadow:0 4px 12px rgba(239,68,68,0.4); cursor:pointer;">⬅️ Geri Dön (Kapat)</button>
+                                </div>
+                                <p style="margin-bottom:15px; font-size:14px; color:#f59e0b; text-align:center; font-weight:bold;">📸 Ekran Görüntüsü (SS) Alarak Galerinize Kaydedebilirsiniz</p>
+                                <img src="${dataUrl}" style="width:100%; height:auto; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.8); object-fit:contain;" />
                             </body>
                             </html>
                         `);
